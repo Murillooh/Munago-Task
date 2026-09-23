@@ -463,11 +463,10 @@ body::after {
 .toolbar-section {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start; /* Evita sobreposio quando o contedo  maior que o container */
   gap: 0.75rem;
   flex-wrap: nowrap;
   overflow-x: auto;
-  scrollbar-width: none;
   padding: 0.45rem 0.75rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -477,7 +476,11 @@ body::after {
 }
 
 .toolbar-section::-webkit-scrollbar {
-  display: none;
+  height: 6px;
+}
+.toolbar-section::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
 }
 
 .view-switcher {
@@ -525,6 +528,7 @@ body::after {
   flex-wrap: nowrap;
   flex-shrink: 0;
   white-space: nowrap;
+  margin-left: auto;
 }
 
 .custom-select {
