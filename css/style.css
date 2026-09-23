@@ -465,23 +465,14 @@ body::after {
   align-items: center;
   justify-content: flex-start;
   gap: 0.5rem;
-  flex-wrap: nowrap;
-  overflow-x: auto;
+  flex-wrap: wrap;
+  overflow: visible;
   padding: 0.35rem 0.5rem;
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   backdrop-filter: blur(12px);
-  white-space: nowrap;
-}
 
-.toolbar-section::-webkit-scrollbar {
-  height: 6px;
-}
-.toolbar-section::-webkit-scrollbar-thumb {
-  background: var(--border-color);
-  border-radius: 4px;
-}
 
 .view-switcher {
   display: flex;
