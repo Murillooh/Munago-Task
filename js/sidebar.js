@@ -52,7 +52,25 @@
 
       // Navigation items
       const navItems = this.sidebar.querySelectorAll('.sidebar-item');
+      
+      const savedMode = localStorage.getItem('taskflow_view_mode') || 'sprint';
+      const pageMapping = {
+        'sprint': 'dashboard',
+        'kanban': 'kanban',
+        'list': 'dashboard',
+        'calendar': 'calendar',
+        'analytics': 'analytics',
+        'ai-report': 'ai-report'
+      };
+      const activePage = pageMapping[savedMode] || 'dashboard';
+
       navItems.forEach(item => {
+        if (item.dataset.page === activePage) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+
         item.addEventListener('click', () => {
           navItems.forEach(i => i.classList.remove('active'));
           item.classList.add('active');

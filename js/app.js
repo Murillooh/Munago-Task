@@ -238,7 +238,7 @@
       this.tasks = [];
       this.listeners = [];
       this.theme = localStorage.getItem(THEME_KEY) || 'dark';
-      this.viewMode = 'sprint';
+      this.viewMode = localStorage.getItem('taskflow_view_mode') || 'sprint';
       this.filters = {
         search: '',
         status: 'all',
@@ -2037,6 +2037,7 @@
 
     window.MunagoSetViewMode = (mode) => {
       store.viewMode = mode;
+      localStorage.setItem('taskflow_view_mode', mode);
       updateViewTabs(mode);
       renderApp();
     };
