@@ -44,7 +44,7 @@
       type: 'Estoque',
       epic: 'Estoque',
       github: 'visiun/infra#08',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString().split('T')[0],
       subtasks: [
         { text: 'Auditar aparelhos em estoque', done: true },
@@ -63,7 +63,7 @@
       type: 'Funcionalidade',
       epic: 'Sistemas',
       github: 'visiun/core#09',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString().split('T')[0],
       subtasks: [
         { text: 'Executar pipeline CI/CD', done: true },
@@ -82,7 +82,7 @@
       type: 'Outro',
       epic: 'Aguardando Aprov...',
       github: 'visiun/ops#10',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString().split('T')[0],
       subtasks: [
         { text: 'Mapear layout das mesas e rede', done: true }
@@ -100,7 +100,7 @@
       type: 'Resolução de Problemas',
       epic: 'Sistemas',
       github: 'visiun/rh#11',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString().split('T')[0],
       subtasks: [
         { text: 'Instalar leitor biométrico', done: true }
@@ -118,7 +118,7 @@
       type: 'Outro',
       epic: 'Infraestrutura',
       github: 'visiun/infra#12',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString().split('T')[0],
       subtasks: [
         { text: 'Conferir faturas', done: true },
@@ -137,7 +137,7 @@
       type: 'Resolução de Problemas',
       epic: 'Infraestrutura',
       github: 'visiun/hardware#13',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 48).toISOString().split('T')[0],
       subtasks: [
         { text: 'Solicitar laudo técnico', done: true },
@@ -156,7 +156,7 @@
       type: 'Resolução de Problemas',
       epic: 'Infraestrutura',
       github: 'visiun/hardware#14',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 72).toISOString().split('T')[0],
       subtasks: [
         { text: 'Backup dos dados do usuário', done: true },
@@ -175,7 +175,7 @@
       type: 'Redução de Custos',
       epic: 'Infraestrutura',
       github: 'visiun/finance#15',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 96).toISOString().split('T')[0],
       subtasks: [
         { text: 'Levantar consumo AWS', done: true },
@@ -194,7 +194,7 @@
       type: 'Funcionalidade',
       epic: 'Infraestrutura',
       github: 'visiun/sec#16',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 120).toISOString().split('T')[0],
       subtasks: [
         { text: 'Bloquear e-mail institucional', done: true },
@@ -205,7 +205,7 @@
     {
       id: 'task-s10',
       taskCode: 'TMYT-017',
-      title: 'Portabilidade linhas vivo e do Fillipe Felix',
+      title: 'Portabilidade linhas vivo e do Sem Responsável',
       description: 'Finalização do processo de portabilidade de operadora e ativação de e-SIM corporativo.',
       status: 'in_progress',
       priority: 'medium',
@@ -213,7 +213,7 @@
       type: 'Outro',
       epic: 'Infraestrutura',
       github: 'visiun/telecom#17',
-      assignee: { name: 'Fillipe Felix', initials: 'FF' },
+      assignee: { name: 'Sem Responsável', initials: '?' },
       dueDate: new Date(Date.now() + 1000 * 60 * 60 * 144).toISOString().split('T')[0],
       subtasks: [
         { text: 'Confirmar SMS de segurança da Vivo', done: true },
@@ -285,7 +285,7 @@
             taskCode: t.taskCode || ('TMYT-' + String(idx + 8).padStart(3, '0')),
             type: t.type || t.category || 'Funcionalidade',
             epic: t.epic || (t.category || 'Sistemas'),
-            assignee: t.assignee || { name: 'Fillipe Felix', initials: 'FF' }
+            assignee: t.assignee || { name: 'Sem Responsável', initials: '?' }
           }));
         }
         this.notify(false); // Notify sem salvar no localstorage
@@ -782,9 +782,9 @@
             </div>
           </td>
           <td class="col-resp center">
-            <div class="resp-avatar-wrap" title="Responsável: ${escapeHtml(task.assignee ? task.assignee.name : 'Fillipe Felix')}">
+            <div class="resp-avatar-wrap" title="Responsável: ${escapeHtml(task.assignee ? task.assignee.name : 'Sem Responsável')}">
               <div class="resp-avatar">
-                ${task.assignee && task.assignee.initials ? task.assignee.initials : 'FF'}
+                ${task.assignee && task.assignee.initials ? task.assignee.initials : '?'}
               </div>
               <div class="resp-avatar-badge">
                 <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
