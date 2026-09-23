@@ -491,6 +491,7 @@ body::after {
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   flex-shrink: 0;
+  min-width: max-content;
   white-space: nowrap;
 }
 
@@ -527,6 +528,7 @@ body::after {
   gap: 0.45rem;
   flex-wrap: nowrap;
   flex-shrink: 0;
+  min-width: max-content;
   white-space: nowrap;
   margin-left: auto;
 }
