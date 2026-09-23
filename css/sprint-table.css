@@ -1,0 +1,970 @@
+/* ==========================================================================
+   TaskFlow - Sprint Table (Monday.com / Linear Style)
+   Estilo fiel ao design de tabela de sprint com badges coloridos full-cell,
+   cabeçalho de sprint, barras de distribuição e alta densidade de informação.
+   ========================================================================== */
+
+/* Container Principal do Sprint */
+.sprint-board-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  width: 100%;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sprint-card {
+  background: var(--bg-card, #191c2e);
+  border: 1px solid var(--border-color, rgba(255, 255, 255, 0.08));
+  border-radius: var(--radius-xl, 14px);
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  display: flex;
+  flex-direction: column;
+}
+
+/* 1. Cabeçalho do Sprint */
+.sprint-header-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.85rem 1.25rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.sprint-header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.sprint-collapse-btn {
+  background: none;
+  border: none;
+  color: #00c875;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  border-radius: 4px;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.sprint-collapse-btn:hover {
+  background: rgba(0, 200, 117, 0.15);
+}
+
+.sprint-collapse-btn.collapsed svg {
+  transform: rotate(-90deg);
+}
+
+.sprint-title {
+  color: #00c875;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sprint-task-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(0, 200, 117, 0.15);
+  color: #00c875;
+  padding: 0.15rem 0.5rem;
+  border-radius: 12px;
+}
+
+.sprint-header-right {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+}
+
+.sprint-date-badge {
+  font-size: 0.82rem;
+  color: #8c96b0;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-weight: 500;
+}
+
+.sprint-pill-btn {
+  background: rgba(255, 255, 255, 0.06);
+  color: #c5cfe6;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.sprint-pill-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.sprint-tab-btn {
+  background: #232840;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  position: relative;
+  cursor: pointer;
+}
+
+.sprint-tab-btn::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 20%;
+  right: 20%;
+  height: 2px;
+  background: #ffcb00;
+  border-radius: 2px;
+  box-shadow: 0 0 6px rgba(255, 203, 0, 0.7);
+}
+
+.sprint-start-btn {
+  background: transparent;
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  transition: all 0.2s ease;
+}
+
+.sprint-start-btn:hover {
+  background: rgba(0, 200, 117, 0.12);
+  border-color: #00c875;
+  color: #00c875;
+}
+
+.sprint-icon-btn {
+  background: none;
+  border: none;
+  color: #8c96b0;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.sprint-icon-btn:hover {
+  color: #ffffff;
+}
+
+/* 2. Tabela de Sprint */
+.sprint-table-wrapper {
+  overflow-x: auto;
+  width: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+.sprint-table-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+.sprint-table-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sprint-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.sprint-table {
+  width: 100%;
+  min-width: 980px;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+  text-align: left;
+}
+
+/* Faixa lateral verde característica do Sprint */
+.col-stripe {
+  width: 6px;
+  padding: 0 !important;
+  background: #00c875;
+}
+
+/* Checkbox */
+.col-check {
+  width: 38px;
+  text-align: center;
+  padding: 0 0.5rem;
+}
+
+.sprint-checkbox {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 3px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+  transition: all 0.15s ease;
+}
+
+.sprint-checkbox:hover {
+  border-color: #00c875;
+  background: rgba(0, 200, 117, 0.08);
+}
+
+.sprint-checkbox:checked {
+  background: #00c875;
+  border-color: #00c875;
+}
+
+.sprint-checkbox:checked::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #ffffff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Cabeçalho da Tabela */
+.sprint-thead tr {
+  background: #1b1e32;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sprint-thead th {
+  padding: 0.65rem 0.75rem;
+  font-weight: 500;
+  color: #8c96b0;
+  white-space: nowrap;
+  font-size: 0.8rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  user-select: none;
+}
+
+.sprint-thead th.center {
+  text-align: center;
+}
+
+.sprint-thead th.col-add {
+  width: 32px;
+  text-align: center;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.sprint-thead th.col-add:hover {
+  color: #00c875;
+}
+
+/* Linhas do Corpo */
+.sprint-tbody tr {
+  background: #191c2e;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  transition: background 0.15s ease;
+}
+
+.sprint-tbody tr:hover {
+  background: #232742;
+}
+
+.sprint-tbody tr.is-selected {
+  background: #222d52 !important;
+}
+
+.sprint-tbody tr.is-done .col-task-title {
+  text-decoration: line-through;
+  opacity: 0.65;
+}
+
+.sprint-tbody td {
+  padding: 0;
+  height: 42px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+/* Célula de Tarefa */
+.col-task {
+  padding: 0 0.85rem !important;
+  min-width: 250px;
+}
+
+.col-task-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.65rem;
+}
+
+.col-task-title {
+  color: #f1f5f9;
+  font-weight: 500;
+  cursor: pointer;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: color 0.15s ease;
+}
+
+.col-task-title:hover {
+  color: #38bdf8;
+}
+
+.col-task-chat-btn {
+  background: none;
+  border: none;
+  color: #7a86a6;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  position: relative;
+  transition: color 0.15s, transform 0.15s;
+  flex-shrink: 0;
+}
+
+.col-task-chat-btn:hover {
+  color: #00c875;
+  transform: scale(1.1);
+}
+
+.col-task-chat-btn.has-notes::after {
+  content: '';
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  width: 5px;
+  height: 5px;
+  background: #00c875;
+  border-radius: 50%;
+}
+
+/* Célula de Responsável */
+.col-resp {
+  text-align: center;
+  width: 60px;
+}
+
+.resp-avatar-wrap {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+}
+
+.resp-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border: 1.5px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+}
+
+.resp-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.resp-avatar-badge {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  background: #1e2338;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.resp-avatar-badge svg {
+  width: 8px;
+  height: 8px;
+  color: #94a3b8;
+}
+
+/* Células Coloridas Full-Bleed (Status & Tipo - Marca Registrada Monday) */
+.col-status-cell,
+.col-type-cell {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.15s ease;
+  overflow: hidden;
+}
+
+.col-status-cell:hover,
+.col-type-cell:hover {
+  filter: brightness(1.12);
+}
+
+/* Dobradura dog-ear no canto superior direito */
+.col-status-cell.has-fold::after,
+.col-type-cell.has-fold::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-width: 0 9px 9px 0;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.45) transparent transparent transparent;
+}
+
+/* Paleta de Cores de Status */
+.status-done {
+  background: #00c875 !important;
+}
+.status-review {
+  background: #579bfc !important;
+}
+.status-progress {
+  background: #fdab3d !important;
+}
+.status-todo {
+  background: #64748b !important;
+}
+
+/* Paleta de Cores de Tipo */
+.type-estoque {
+  background: #579bfc !important;
+}
+.type-funcionalidade {
+  background: #00c875 !important;
+}
+.type-outro {
+  background: #2ba7ff !important;
+}
+.type-resolucao {
+  background: #ffcb00 !important;
+  color: #1a1e2e !important;
+}
+.type-reducao {
+  background: #ff642e !important;
+}
+.type-infra {
+  background: #8b5cf6 !important;
+}
+.type-seguranca {
+  background: #ef4444 !important;
+}
+.type-default {
+  background: #4f5874 !important;
+}
+
+/* Célula de ID da Tarefa */
+.col-id {
+  text-align: center;
+  color: #8c96b0;
+  font-family: var(--font-mono, monospace);
+  font-size: 0.78rem;
+  font-weight: 500;
+  width: 105px;
+}
+
+/* Célula de Épico */
+.col-epic {
+  text-align: center;
+  padding: 0 0.5rem !important;
+  width: 150px;
+}
+
+.epic-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: #2b3149;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #cbd5e1;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.74rem;
+  font-weight: 500;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.epic-pill-remove {
+  background: none;
+  border: none;
+  color: #8c96b0;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.85rem;
+  line-height: 1;
+  transition: color 0.15s;
+}
+
+.epic-pill-remove:hover {
+  color: #ef4444;
+}
+
+/* Célula Link do GitHub */
+.col-github {
+  text-align: center;
+  width: 130px;
+  padding: 0 0.5rem !important;
+}
+
+.github-link-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #8c96b0;
+  font-size: 0.74rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.03);
+  text-decoration: none;
+  transition: all 0.15s;
+}
+
+.github-link-chip:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* Ações Rápidas da Linha (Hover) */
+.col-actions-quick {
+  width: 60px;
+  text-align: center;
+}
+
+.sprint-row-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.sprint-tbody tr:hover .sprint-row-actions {
+  opacity: 1;
+}
+
+.sprint-action-btn {
+  background: none;
+  border: none;
+  color: #8c96b0;
+  cursor: pointer;
+  padding: 3px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.sprint-action-btn:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.sprint-action-btn.del:hover {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* 3. Linha "+ Adicionar tarefa" */
+.sprint-add-row {
+  background: #171a2b;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.sprint-add-row:hover {
+  background: #1e2238;
+}
+
+.sprint-add-input-wrap {
+  display: flex;
+  align-items: center;
+  padding: 0 0.85rem;
+  height: 40px;
+}
+
+.sprint-add-input {
+  width: 100%;
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #f1f5f9;
+  font-family: inherit;
+  font-size: 0.84rem;
+  padding: 0.35rem 0;
+}
+
+.sprint-add-input::placeholder {
+  color: #64748b;
+  font-style: normal;
+}
+
+/* 4. Rodapé de Resumo com Distribuição em Barras (Monday Style) */
+.sprint-tfoot tr {
+  background: #151827;
+}
+
+.sprint-tfoot td {
+  padding: 0.45rem 0.5rem;
+  height: 38px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+/* Barra Segmentada de Status */
+.sprint-segmented-bar {
+  display: flex;
+  height: 18px;
+  border-radius: 4px;
+  overflow: hidden;
+  width: 100%;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.seg-part {
+  height: 100%;
+  transition: width 0.3s ease;
+  position: relative;
+}
+
+.seg-part:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #0f121d;
+  color: #ffffff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 10;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* 5. Menu Flutuante / Popover de Seleção Rápida de Status ou Tipo */
+.sprint-popover-menu {
+  position: absolute;
+  z-index: 100;
+  background: #1e2238;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  animation: scaleIn 0.15s ease-out;
+}
+
+.sprint-popover-item {
+  padding: 0.55rem 0.85rem;
+  color: #ffffff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: filter 0.15s;
+}
+
+.sprint-popover-item:hover {
+  filter: brightness(1.15);
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ==========================================================================
+   Suporte Completo ao Modo Claro (Light Theme) para a Tabela de Sprint
+   Estilo fiel ao Monday.com Light Mode
+   ========================================================================== */
+[data-theme="light"] .sprint-card {
+  background: #ffffff;
+  border-color: #e6e9ef;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="light"] .sprint-header-bar {
+  background: #ffffff;
+  border-bottom-color: #e6e9ef;
+}
+
+[data-theme="light"] .sprint-date-badge {
+  color: #676879;
+}
+
+[data-theme="light"] .sprint-pill-btn {
+  background: #f5f6f8;
+  color: #323338;
+  border-color: #d0d4e4;
+}
+
+[data-theme="light"] .sprint-pill-btn:hover {
+  background: #eef0f4;
+  color: #1a1e2e;
+  border-color: #b0b4c8;
+}
+
+[data-theme="light"] .sprint-tab-btn {
+  background: #eef1f6;
+  color: #1e2238;
+  border-color: #d0d4e4;
+}
+
+[data-theme="light"] .sprint-tab-btn::after {
+  background: #ffcb00;
+  box-shadow: 0 0 6px rgba(255, 203, 0, 0.7);
+}
+
+[data-theme="light"] .sprint-start-btn {
+  background: #ffffff;
+  color: #323338;
+  border-color: #cbd5e1;
+}
+
+[data-theme="light"] .sprint-start-btn:hover {
+  background: rgba(0, 200, 117, 0.08);
+  border-color: #00c875;
+  color: #00854d;
+}
+
+[data-theme="light"] .sprint-icon-btn {
+  color: #676879;
+}
+
+[data-theme="light"] .sprint-icon-btn:hover {
+  color: #1a1e2e;
+}
+
+[data-theme="light"] .sprint-table-wrapper {
+  scrollbar-color: rgba(0, 0, 0, 0.15) transparent;
+}
+
+[data-theme="light"] .sprint-table-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.15);
+}
+
+/* Cabeçalho da Tabela */
+[data-theme="light"] .sprint-thead tr {
+  background: #f5f6f8;
+  border-bottom: 1px solid #e6e9ef;
+}
+
+[data-theme="light"] .sprint-thead th {
+  color: #676879;
+  border-right-color: #e6e9ef;
+}
+
+/* Checkbox */
+[data-theme="light"] .sprint-checkbox {
+  border-color: #c3c6d4;
+  background: #ffffff;
+}
+
+[data-theme="light"] .sprint-checkbox:hover {
+  border-color: #00c875;
+  background: rgba(0, 200, 117, 0.08);
+}
+
+/* Linhas do Corpo */
+[data-theme="light"] .sprint-tbody tr {
+  background: #ffffff;
+  border-bottom-color: #e6e9ef;
+}
+
+[data-theme="light"] .sprint-tbody tr:hover {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .sprint-tbody tr.is-selected {
+  background: #eef2ff !important;
+}
+
+[data-theme="light"] .sprint-tbody td {
+  border-right-color: #e6e9ef;
+}
+
+[data-theme="light"] .col-task-title {
+  color: #323338;
+}
+
+[data-theme="light"] .col-task-title:hover {
+  color: #0073ea;
+}
+
+[data-theme="light"] .col-task-chat-btn {
+  color: #8c96b0;
+}
+
+[data-theme="light"] .col-task-chat-btn:hover {
+  color: #00c875;
+}
+
+[data-theme="light"] .resp-avatar {
+  border-color: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.15);
+}
+
+[data-theme="light"] .resp-avatar-badge {
+  background: #ffffff;
+}
+
+[data-theme="light"] .resp-avatar-badge svg {
+  color: #64748b;
+}
+
+/* ID da Tarefa */
+[data-theme="light"] .col-id {
+  color: #676879;
+}
+
+/* Épico */
+[data-theme="light"] .epic-pill {
+  background: #f0f3f6;
+  border-color: #d0d4e4;
+  color: #323338;
+}
+
+[data-theme="light"] .epic-pill-remove {
+  color: #676879;
+}
+
+[data-theme="light"] .epic-pill-remove:hover {
+  color: #ef4444;
+}
+
+/* Link do GitHub */
+[data-theme="light"] .github-link-chip {
+  background: #f0f3f6;
+  color: #57606a;
+}
+
+[data-theme="light"] .github-link-chip:hover {
+  background: #e2e8f0;
+  color: #0969da;
+}
+
+/* Ações Rápidas */
+[data-theme="light"] .sprint-action-btn {
+  color: #676879;
+}
+
+[data-theme="light"] .sprint-action-btn:hover {
+  color: #1a1e2e;
+  background: rgba(0, 0, 0, 0.05);
+}
+
+/* Linha "+ Adicionar Tarefa" */
+[data-theme="light"] .sprint-add-row {
+  background: #ffffff;
+  border-bottom-color: #e6e9ef;
+}
+
+[data-theme="light"] .sprint-add-row:hover {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .sprint-add-input {
+  color: #323338;
+}
+
+[data-theme="light"] .sprint-add-input::placeholder {
+  color: #8c96b0;
+}
+
+/* Rodapé */
+[data-theme="light"] .sprint-tfoot tr {
+  background: #f8fafc;
+}
+
+[data-theme="light"] .sprint-tfoot td {
+  border-right-color: #e6e9ef;
+}
+
+[data-theme="light"] .sprint-segmented-bar {
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .seg-part:hover::after {
+  background: #1e2238;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Popover Menu */
+[data-theme="light"] .sprint-popover-menu {
+  background: #ffffff;
+  border-color: #d0d4e4;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+

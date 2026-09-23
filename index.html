@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Munago Tasks - Sistema Moderno e Eficiente de Controle e Gestão de Tarefas com Quadro Kanban, visualização em lista, métricas e persistência local.">
+  <meta name="keywords" content="tarefas, kanban, produtividade, task manager, checklist, organizador">
+  <title>Munago Tasks | Controle Inteligente de Tarefas</title>
+  
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/auth.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/sprint-table.css">
+  <link rel="stylesheet" href="css/calendar.css">
+  <link rel="stylesheet" href="css/analytics.css">
+</head>
+<body>
+
+  <!-- Canvas para efeito de confetes ao concluir tarefas -->
+  <canvas id="confetti-canvas"></canvas>
+
+  <!-- Input oculto para importação de backup JSON -->
+  <input type="file" id="import-file-input" accept=".json" style="display: none;">
+
+  <div class="app-container">
+    
+    <!-- Top Header Navigation -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="brand-icon" title="Munago Tasks Workspace">
+          <svg width="25" height="25" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m4 12.5 5 5 11-11"/>
+            <path d="M13 18.5h6.5" stroke-width="2.2" opacity="0.8"/>
+            <path d="M15 14.5h4.5" stroke-width="2.2" opacity="0.5"/>
+          </svg>
+        </div>
+        <div class="brand-info">
+          <h1>
+            <span class="brand-title-task">Munago</span> <span class="brand-title-flow">Tasks</span>
+            <span class="brand-badge">
+              <svg class="pro-sparkle" width="9" height="9" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
+              </svg>
+              PRO
+            </span>
+          </h1>
+          <p class="brand-subtitle">
+            <span class="status-pulse-dot" title="Workspace ativo e sincronizado"></span>
+            Sistema Inteligente de Controle de Tarefas
+          </p>
+        </div>
+      </div>
+
+      <!-- Ações do Cabeçalho -->
+      <div class="header-actions">
+        <!-- Campo de Pesquisa Rápida -->
+        <div class="search-bar-wrapper">
+          <span class="search-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>
+            </svg>
+          </span>
+          <input 
+            type="text" 
+            id="search-input" 
+            class="search-input" 
+            placeholder="Pesquisar tarefas, tags..." 
+            autocomplete="off"
+          >
+          <span class="search-shortcut" title="Atalho para pesquisar">/</span>
+        </div>
+
+        <!-- Botão Alternar Tema -->
+        <button id="theme-toggle-btn" class="btn-icon" title="Alternar Modo Escuro / Claro">
+          <span id="theme-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          </span>
+        </button>
+
+        <!-- Botões de Backup -->
+        <button id="btn-export-backup" class="btn btn-secondary" title="Exportar todas as tarefas em arquivo JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          <span>Backup</span>
+        </button>
+
+        <button id="btn-import-backup" class="btn btn-secondary" title="Restaurar tarefas de um arquivo JSON">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <span>Importar</span>
+        </button>
+
+        <!-- Botão Nova Tarefa -->
+        <button id="btn-new-task" class="btn btn-primary" title="Adicionar nova tarefa (Atalho: N)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <span>Nova Tarefa</span>
+        </button>
+
+        <!-- Slot do Perfil de Usuário / Login -->
+        <div id="user-profile-slot"></div>
+      </div>
+    </header>
+
+    <!-- Layout Grid: Sidebar + Main Content -->
+    <div class="app-layout">
+
+      <!-- Sidebar de Navegação Premium -->
+      <aside id="app-sidebar" class="sidebar" aria-label="Navegação Principal">
+        
+        <!-- Botão Colapsar/Expandir -->
+        <button id="sidebar-toggle" class="sidebar-toggle" title="Recolher sidebar">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 19l-7-7 7-7"/><path d="M18 5l-7 7 7 7" opacity="0.4"/></svg>
+        </button>
+
+        <!-- Info do Workspace -->
+        <div class="sidebar-workspace">
+          <div class="sidebar-ws-avatar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          </div>
+          <div class="sidebar-ws-info">
+            <span class="sidebar-ws-name">Meu Workspace</span>
+            <span class="sidebar-ws-plan">
+              <span class="sidebar-plan-dot"></span>
+              Plano Pro Ativo
+            </span>
+          </div>
+        </div>
+
+        <!-- Navegação Principal -->
+        <nav class="sidebar-nav">
+          <span class="sidebar-section-label">Menu</span>
+          <ul class="sidebar-menu">
+            <li>
+              <button class="sidebar-item active" data-page="dashboard" title="Dashboard">
+                <span class="sidebar-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                </span>
+                <span class="sidebar-item-text">Dashboard</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item" data-page="kanban" title="Quadro Kanban">
+                <span class="sidebar-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+                </span>
+                <span class="sidebar-item-text">Quadro Kanban</span>
+                <span class="sidebar-badge">4</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item" data-page="calendar" title="Calendário">
+                <span class="sidebar-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                </span>
+                <span class="sidebar-item-text">Calendário</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-item" data-page="analytics" title="Métricas">
+                <span class="sidebar-item-icon">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                </span>
+                <span class="sidebar-item-text">Métricas</span>
+              </button>
+            </li>
+          </ul>
+        </nav>
+
+        <!-- Categorias -->
+        <div class="sidebar-categories">
+          <span class="sidebar-section-label">Categorias</span>
+          <ul class="sidebar-cat-list" id="sidebar-cat-list">
+            <li>
+              <button class="sidebar-cat-item" data-cat="Desenvolvimento" title="Categoria: Desenvolvimento">
+                <span class="sidebar-cat-dot" style="background: #6366f1;"></span>
+                <span class="sidebar-cat-name">Desenvolvimento</span>
+                <span class="sidebar-cat-count">2</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-cat-item" data-cat="Trabalho" title="Categoria: Trabalho">
+                <span class="sidebar-cat-dot" style="background: #f59e0b;"></span>
+                <span class="sidebar-cat-name">Trabalho</span>
+                <span class="sidebar-cat-count">1</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-cat-item" data-cat="Segurança" title="Categoria: Segurança">
+                <span class="sidebar-cat-dot" style="background: #ef4444;"></span>
+                <span class="sidebar-cat-name">Segurança</span>
+                <span class="sidebar-cat-count">1</span>
+              </button>
+            </li>
+            <li>
+              <button class="sidebar-cat-item" data-cat="Estudos" title="Categoria: Estudos">
+                <span class="sidebar-cat-dot" style="background: #10b981;"></span>
+                <span class="sidebar-cat-name">Estudos</span>
+                <span class="sidebar-cat-count">1</span>
+              </button>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Espaço de Armazenamento -->
+        <div class="sidebar-storage">
+          <div class="sidebar-storage-header">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3"/></svg>
+            <span class="sidebar-storage-label">Armazenamento Local</span>
+          </div>
+          <div class="sidebar-storage-bar">
+            <div class="sidebar-storage-fill" id="sidebar-storage-fill" style="width: 24%;"></div>
+          </div>
+          <span class="sidebar-storage-text">24% utilizado de 5 MB</span>
+        </div>
+
+        <!-- Ações Rápidas no Footer -->
+        <div class="sidebar-footer">
+          <button class="sidebar-footer-btn" title="Configurações">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+            <span class="sidebar-footer-text">Configurações</span>
+          </button>
+          <button class="sidebar-footer-btn" title="Ajuda & Atalhos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+            <span class="sidebar-footer-text">Ajuda</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- Conteúdo Principal -->
+      <div class="main-content">
+
+    <!-- Overview Dashboard: Métricas em Tempo Real -->
+    <section class="metrics-grid" aria-label="Resumo de Métricas">
+      <div class="metric-card">
+        <div class="metric-content">
+          <span class="metric-label">Total de Tarefas</span>
+          <span class="metric-value" id="metric-total">0</span>
+          <span class="metric-sub">Em todas as categorias</span>
+        </div>
+        <div class="metric-icon-box total">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="m9 12 2 2 4-4"/></svg>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-content">
+          <span class="metric-label">Em Andamento</span>
+          <span class="metric-value" id="metric-progress">0</span>
+          <span class="metric-sub">Tarefas ativas no momento</span>
+        </div>
+        <div class="metric-icon-box progress">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-content">
+          <span class="metric-label">Concluídas</span>
+          <span class="metric-value" id="metric-done">0</span>
+          <span class="metric-sub">
+            Taxa de sucesso: <strong id="metric-rate-text">0%</strong>
+          </span>
+          <div class="progress-track">
+            <div class="progress-fill" id="metric-progress-bar" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="metric-icon-box completed">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+      </div>
+
+      <div class="metric-card">
+        <div class="metric-content">
+          <span class="metric-label">Prazos Atrasados</span>
+          <span class="metric-value" id="metric-urgent">0</span>
+          <span class="metric-sub">Requerem atenção prioritária</span>
+        </div>
+        <div class="metric-icon-box urgent">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" x2="12"/><line x1="12" x2="12.01" y1="17" x2="17"/></svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- Toolbar: Alternância de Visão e Filtros Combinados -->
+    <section class="toolbar-section">
+      <div class="view-switcher" role="tablist" aria-label="Visualização">
+        <button id="view-sprint-btn" class="view-btn active" role="tab" aria-selected="true" title="Visualização Tabela Sprint (Estilo Monday.com)">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3h18v18H3z"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+          <span>Tabela Sprint</span>
+        </button>
+        <button id="view-kanban-btn" class="view-btn" role="tab" aria-selected="false" title="Visualização em Quadro Kanban">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18M15 3v18"/></svg>
+          <span>Quadro Kanban</span>
+        </button>
+        <button id="view-list-btn" class="view-btn" role="tab" aria-selected="false" title="Visualização em Lista">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" x2="21" y1="6" y2="6"/><line x1="8" x2="21" y1="12" y2="12"/><line x1="8" x2="21" y1="18" y2="18"/><line x1="3" x2="3.01" y1="6" y2="6"/><line x1="3" x2="3.01" y1="12" y2="12"/><line x1="3" x2="3.01" y1="18" y2="18"/></svg>
+          <span>Lista Detalhada</span>
+        </button>
+        <button id="view-calendar-btn" class="view-btn" role="tab" aria-selected="false" title="Visualização em Calendário">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          <span>Calendário</span>
+        </button>
+        <button id="view-analytics-btn" class="view-btn" role="tab" aria-selected="false" title="Painel de Métricas e Desempenho">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+          <span>Métricas</span>
+        </button>
+      </div>
+
+      <div class="filter-group">
+        <select id="filter-status" class="custom-select" aria-label="Filtrar por Status">
+          <option value="all">Todos os Status</option>
+          <option value="todo">A Fazer</option>
+          <option value="in_progress">Em Andamento</option>
+          <option value="review">Aguardando Revisão</option>
+          <option value="done">Concluído</option>
+        </select>
+
+        <select id="filter-priority" class="custom-select" aria-label="Filtrar por Prioridade">
+          <option value="all">Todas as Prioridades</option>
+          <option value="urgent">Urgente</option>
+          <option value="high">Alta</option>
+          <option value="medium">Média</option>
+          <option value="low">Baixa</option>
+        </select>
+
+        <select id="filter-category" class="custom-select" aria-label="Filtrar por Categoria">
+          <option value="all">Todas as Categorias</option>
+        </select>
+
+        <select id="sort-by" class="custom-select" aria-label="Ordenar Tarefas">
+          <option value="dueDate">Prazo mais próximo</option>
+          <option value="priority">Maior Prioridade</option>
+          <option value="createdAt">Mais Recentes</option>
+        </select>
+
+        <button id="btn-clear-filters" class="btn-clear-filters" title="Limpar todos os filtros aplicados">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+          <span>Limpar</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- Main View Container (Kanban ou Lista dinâmico) -->
+    <main id="view-container">
+      <!-- Inserido dinamicamente via JS -->
+    </main>
+
+      </div><!-- /.main-content -->
+    </div><!-- /.app-layout -->
+
+  </div>
+
+  <!-- Modal de Criação / Edição de Tarefas -->
+  <div id="task-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h2 id="modal-title" class="modal-title">Nova Tarefa</h2>
+        <button id="modal-close-btn" class="modal-close-btn" aria-label="Fechar Modal">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="task-form">
+        <input type="hidden" id="task-id">
+
+        <div class="modal-body">
+          <!-- Título -->
+          <div class="form-group">
+            <label class="form-label" for="task-title">Título da Tarefa *</label>
+            <input 
+              type="text" 
+              id="task-title" 
+              class="form-input" 
+              placeholder="Ex: Desenvolver fluxo de checkout" 
+              required
+            >
+          </div>
+
+          <!-- Descrição -->
+          <div class="form-group">
+            <label class="form-label" for="task-description">Descrição detalhada</label>
+            <textarea 
+              id="task-description" 
+              class="form-textarea" 
+              placeholder="Adicione detalhes, especificações ou links úteis..."
+            ></textarea>
+          </div>
+
+          <!-- Linha: Status e Prioridade -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="task-status">Status</label>
+              <select id="task-status" class="form-select">
+                <option value="todo">📝 A Fazer</option>
+                <option value="in_progress">⚡ Em Andamento</option>
+                <option value="review">👀 Aguardando Revisão</option>
+                <option value="done">✅ Concluído</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="task-priority">Prioridade</label>
+              <select id="task-priority" class="form-select">
+                <option value="low">🟢 Baixa</option>
+                <option value="medium" selected>🔵 Média</option>
+                <option value="high">🟡 Alta</option>
+                <option value="urgent">🔴 Urgente</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Linha: Categoria e Prazo -->
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label" for="task-category">Categoria / Tag</label>
+              <input 
+                type="text" 
+                id="task-category" 
+                class="form-input" 
+                placeholder="Ex: Trabalho, Estudos, Finanças"
+              >
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="task-duedate">Data de Entrega</label>
+              <input 
+                type="date" 
+                id="task-duedate" 
+                class="form-input"
+              >
+            </div>
+          </div>
+
+          <!-- Checklist de Subtarefas -->
+          <div class="form-group checklist-container">
+            <label class="form-label">Checklist de Subtarefas</label>
+            <div class="checklist-input-group">
+              <input 
+                type="text" 
+                id="modal-subtask-input" 
+                class="form-input" 
+                placeholder="Adicionar etapa (Pressione Enter)..."
+              >
+              <button type="button" id="btn-add-subtask" class="btn btn-secondary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+                <span>Adicionar</span>
+              </button>
+            </div>
+            <div id="modal-subtasks-list" class="checklist-items"></div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="modal-cancel-btn" class="btn btn-secondary">Cancelar</button>
+          <button type="submit" class="btn btn-primary">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Salvar Tarefa</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal / Tela de Autenticação com Animação Deslizante -->
+  <div id="auth-overlay" class="auth-overlay" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+    <div id="auth-container" class="auth-container">
+      
+      <!-- Botão Fechar -->
+      <button id="btn-close-auth" class="btn-close-auth" aria-label="Fechar Autenticação">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>
+      </button>
+
+      <!-- Painel de Cadastro (Sign Up) -->
+      <div class="form-container sign-up-container">
+        <form id="form-signup" class="auth-form">
+
+          <!-- Cabeçalho animado com marca -->
+          <div class="auth-brand-header anim-stagger-1">
+            <div class="auth-brand-logo">
+              <div class="auth-logo-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <span class="auth-logo-text">Munago Tasks</span>
+            </div>
+          </div>
+
+          <h2 class="auth-title anim-stagger-2">Criar Conta</h2>
+          <p class="auth-subtitle anim-stagger-2">Comece a organizar suas tarefas hoje mesmo</p>
+
+          <!-- Botões de Cadastro Social -->
+          <div class="auth-social-row anim-stagger-3">
+            <button type="button" class="btn-social" title="Cadastrar com Google">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            </button>
+            <button type="button" class="btn-social" title="Cadastrar com GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            </button>
+            <button type="button" class="btn-social" title="Cadastrar com Microsoft">
+              <svg width="18" height="18" viewBox="0 0 24 24"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+            </button>
+          </div>
+
+          <!-- Divider animado -->
+          <div class="auth-divider anim-stagger-3">
+            <span class="auth-divider-line"></span>
+            <span class="auth-divider-text">ou cadastre com e-mail</span>
+            <span class="auth-divider-line"></span>
+          </div>
+
+          <div class="auth-input-group anim-stagger-4">
+            <label class="auth-label" for="register-name">Nome Completo</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+              </span>
+              <input type="text" id="register-name" class="auth-input" placeholder="Ex: Murillo Silva" required autocomplete="name">
+              <span class="auth-input-focus-ring"></span>
+            </div>
+          </div>
+
+          <div class="auth-input-group anim-stagger-4">
+            <label class="auth-label" for="register-email">E-mail</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </span>
+              <input type="email" id="register-email" class="auth-input" placeholder="seu@email.com" required autocomplete="email">
+              <span class="auth-input-focus-ring"></span>
+            </div>
+          </div>
+
+          <div class="auth-input-group anim-stagger-5">
+            <label class="auth-label" for="register-password">Senha de Acesso</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" id="register-password" class="auth-input" placeholder="Mínimo 6 caracteres" required autocomplete="new-password">
+              <button type="button" class="btn-toggle-password" aria-label="Mostrar ou ocultar senha">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <span class="auth-input-focus-ring"></span>
+            </div>
+            <!-- Medidor de Força de Senha -->
+            <div class="password-strength-wrap">
+              <div class="strength-bar-track">
+                <div id="strength-step-1" class="strength-step"></div>
+                <div id="strength-step-2" class="strength-step"></div>
+                <div id="strength-step-3" class="strength-step"></div>
+              </div>
+              <div class="strength-text">
+                <span id="strength-label">Mínimo de 6 caracteres</span>
+                <span>Força</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="auth-input-group anim-stagger-5">
+            <label class="auth-label" for="register-confirm-password">Confirmar Senha</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" id="register-confirm-password" class="auth-input" placeholder="Repita sua senha" required autocomplete="new-password">
+              <button type="button" class="btn-toggle-password" aria-label="Mostrar ou ocultar senha">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <span class="auth-input-focus-ring"></span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-auth-submit anim-stagger-6">
+            <span class="btn-submit-text">Criar Minha Conta</span>
+            <span class="btn-submit-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </span>
+            <span class="btn-submit-shimmer"></span>
+          </button>
+
+          <!-- Toggle para telas menores -->
+          <div class="mobile-toggle-auth">
+            Já tem uma conta? <button type="button" id="mobile-to-signin" class="mobile-toggle-btn">Fazer Login</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Painel de Login (Sign In) -->
+      <div class="form-container sign-in-container">
+        <form id="form-signin" class="auth-form">
+          
+          <!-- Cabeçalho animado com marca -->
+          <div class="auth-brand-header anim-stagger-1">
+            <div class="auth-brand-logo">
+              <div class="auth-logo-icon">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+              </div>
+              <span class="auth-logo-text">Munago Tasks</span>
+            </div>
+          </div>
+
+          <h2 id="auth-modal-title" class="auth-title anim-stagger-2">Bem-vindo de volta</h2>
+          <p class="auth-subtitle anim-stagger-2">Faça login para acessar seu workspace</p>
+
+          <!-- Botões de Login Social -->
+          <div class="auth-social-row anim-stagger-3">
+            <button type="button" class="btn-social" title="Entrar com Google">
+              <svg width="18" height="18" viewBox="0 0 24 24"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18A10.96 10.96 0 0 0 1 12c0 1.77.42 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>
+            </button>
+            <button type="button" class="btn-social" title="Entrar com GitHub">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            </button>
+            <button type="button" class="btn-social" title="Entrar com Microsoft">
+              <svg width="18" height="18" viewBox="0 0 24 24"><rect x="1" y="1" width="10" height="10" fill="#F25022"/><rect x="13" y="1" width="10" height="10" fill="#7FBA00"/><rect x="1" y="13" width="10" height="10" fill="#00A4EF"/><rect x="13" y="13" width="10" height="10" fill="#FFB900"/></svg>
+            </button>
+          </div>
+
+          <!-- Divider animado -->
+          <div class="auth-divider anim-stagger-3">
+            <span class="auth-divider-line"></span>
+            <span class="auth-divider-text">ou entre com e-mail</span>
+            <span class="auth-divider-line"></span>
+          </div>
+
+          <div class="auth-input-group anim-stagger-4">
+            <label class="auth-label" for="login-email">E-mail</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+              </span>
+              <input type="email" id="login-email" class="auth-input" placeholder="seu@email.com" value="murillo@exemplo.com" required autocomplete="email">
+              <span class="auth-input-focus-ring"></span>
+            </div>
+          </div>
+
+          <div class="auth-input-group anim-stagger-5">
+            <label class="auth-label" for="login-password">Senha</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+              </span>
+              <input type="password" id="login-password" class="auth-input" placeholder="Sua senha" value="password123" required autocomplete="current-password">
+              <button type="button" class="btn-toggle-password" aria-label="Mostrar ou ocultar senha">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+              <span class="auth-input-focus-ring"></span>
+            </div>
+          </div>
+
+          <div class="auth-extra-actions anim-stagger-5">
+            <label class="auth-checkbox-label">
+              <input type="checkbox" checked class="auth-checkbox">
+              <span class="auth-checkbox-custom"></span>
+              <span>Lembrar de mim</span>
+            </label>
+            <button type="button" data-action="guest-mode" class="btn-guest-mode">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
+              <span>Modo Convidado</span>
+            </button>
+          </div>
+
+          <button type="submit" class="btn-auth-submit anim-stagger-6">
+            <span class="btn-submit-text">Entrar no Munago Tasks</span>
+            <span class="btn-submit-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </span>
+            <span class="btn-submit-shimmer"></span>
+          </button>
+
+          <!-- Segurança badge -->
+          <div class="auth-security-badge anim-stagger-6">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            <span>Conexão criptografada de ponta a ponta</span>
+          </div>
+
+          <!-- Toggle para telas menores -->
+          <div class="mobile-toggle-auth">
+            Não tem uma conta? <button type="button" id="mobile-to-signup" class="mobile-toggle-btn">Criar agora</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Painel Deslizante de Cobertura Animado (Overlay Slider) -->
+      <div class="overlay-container">
+        <div class="overlay">
+          
+          <!-- Painel Esquerdo (Exibido no modo Cadastro com Informações de Retorno) -->
+          <div class="overlay-panel overlay-left">
+            <div class="sc-top-bar">
+              <div class="sc-live-pill">
+                <span class="live-dot-glow"></span>
+                <span>ACESSO RÁPIDO</span>
+              </div>
+              <span class="sc-version-pill">TLS Seguro</span>
+            </div>
+
+            <div class="sc-hero-text">
+              <h2 class="sc-main-title">Bem-vindo de Volta!</h2>
+              <p class="sc-main-subtitle">Suas tarefas, métricas e quadro Kanban sincronizados aguardam por você.</p>
+            </div>
+
+            <!-- Mini Preview da Conta Sincronizada -->
+            <div class="sim-kanban-sim">
+              <div class="sim-account-preview">
+                <div class="sim-acc-avatar">MS</div>
+                <div class="sim-acc-info">
+                  <span class="sim-acc-name">Murillo Silva</span>
+                  <span class="sim-acc-status">● Workspace Sincronizado</span>
+                </div>
+              </div>
+              
+              <div class="sim-stats-grid">
+                <div class="sim-stat-box">
+                  <span class="sim-stat-val">18</span>
+                  <span class="sim-stat-lbl">Tarefas Ativas</span>
+                </div>
+                <div class="sim-stat-box">
+                  <span class="sim-stat-val">94%</span>
+                  <span class="sim-stat-lbl">Concluídas</span>
+                </div>
+                <div class="sim-stat-box">
+                  <span class="sim-stat-val">0</span>
+                  <span class="sim-stat-lbl">Atrasadas</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="sc-bottom-cta">
+              <span class="sc-cta-hint">Já possui credenciais cadastradas?</span>
+              <button type="button" class="btn-sc-register" id="btn-to-signin">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                <span>Fazer Login</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Painel Direito (Exibido no modo Login com Simulação Viva de Kanban e Métricas) -->
+          <div class="overlay-panel overlay-right">
+            
+            <!-- Topo do Showcase -->
+            <div class="sc-top-bar">
+              <div class="sc-live-pill">
+                <span class="live-dot-glow"></span>
+                <span>WORKSPACE AO VIVO</span>
+              </div>
+              <span class="sc-version-pill">v2.4 Pro</span>
+            </div>
+
+            <div class="sc-hero-text">
+              <h2 class="sc-main-title">Fluxo Inteligente de Tarefas</h2>
+              <p class="sc-main-subtitle">Acompanhe demandas em tempo real com Kanban dinâmico, foco ágil e métricas automáticas.</p>
+            </div>
+
+            <!-- SIMULAÇÃO VISUAL: Mini Quadro Kanban Animado -->
+            <div class="mini-kanban-sim" aria-hidden="true">
+              
+              <!-- Coluna 1: Em Andamento -->
+              <div class="sim-column">
+                <div class="sim-col-header">
+                  <span class="sim-col-dot progress"></span>
+                  <span class="sim-col-name">Em Andamento</span>
+                  <span class="sim-col-badge">1</span>
+                </div>
+                <div class="sim-col-body">
+                  <!-- Card que transita suavemente entre as colunas -->
+                  <div class="sim-task-card anim-transit-task">
+                    <div class="sim-card-top">
+                      <span class="sim-tag-urgent">Urgente</span>
+                      <span class="sim-tag-cat">Tech</span>
+                    </div>
+                    <div class="sim-card-title">Sprint de Entrega 🚀</div>
+                    <div class="sim-checklist-row">
+                      <div class="sim-check-icon">✓</div>
+                      <span>3/3 subtarefas</span>
+                    </div>
+                    <div class="sim-card-progress">
+                      <div class="sim-bar-fill"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Coluna 2: Concluído -->
+              <div class="sim-column">
+                <div class="sim-col-header">
+                  <span class="sim-col-dot done"></span>
+                  <span class="sim-col-name">Concluído</span>
+                  <span class="sim-col-badge sim-count-done">4</span>
+                </div>
+                <div class="sim-col-body sim-dropzone">
+                  <div class="sim-placeholder-drop">
+                    <span>Área de conclusão</span>
+                  </div>
+                  <div class="sim-task-card card-static-done">
+                    <div class="sim-card-top">
+                      <span class="sim-tag-done">Finalizada</span>
+                    </div>
+                    <div class="sim-card-title">Design do Cabeçalho</div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+
+            <!-- Mini Dashboard de Produtividade com Gráfico Animado -->
+            <div class="sim-metrics-strip">
+              <div class="sim-kpi-item">
+                <div class="sim-kpi-circle">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+                </div>
+                <div class="sim-kpi-data">
+                  <span class="sim-kpi-number">98.5%</span>
+                  <span class="sim-kpi-label">Entregas no Prazo</span>
+                </div>
+              </div>
+
+              <div class="sim-divider-v"></div>
+
+              <div class="sim-kpi-item">
+                <!-- Mini Gráfico de Barras Animadas -->
+                <div class="sim-mini-chart">
+                  <div class="sim-bar b1"></div>
+                  <div class="sim-bar b2"></div>
+                  <div class="sim-bar b3"></div>
+                  <div class="sim-bar b4"></div>
+                  <div class="sim-bar b5"></div>
+                </div>
+                <div class="sim-kpi-data">
+                  <span class="sim-kpi-number">+3.2x</span>
+                  <span class="sim-kpi-label">Velocidade Média</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chamada para Ação para Cadastro -->
+            <div class="sc-bottom-cta">
+              <span class="sc-cta-hint">Ainda não possui conta no sistema?</span>
+              <button type="button" class="btn-sc-register" id="btn-to-signup">
+                <span>Criar Conta Gratuita</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+          </div>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Container de Notificações Toast -->
+  <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+  <!-- Scripts da Aplicação -->
+  <script src="js/sidebar.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
