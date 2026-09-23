@@ -172,6 +172,9 @@
     }
 
     closeAuthModal() {
+      // Bloqueia o fechamento do modal caso não haja usuário logado
+      if (!this.currentUser) return;
+
       const overlay = document.getElementById('auth-overlay');
       if (overlay) overlay.classList.remove('active');
       
