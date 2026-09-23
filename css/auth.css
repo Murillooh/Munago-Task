@@ -76,6 +76,7 @@
   justify-content: center;
   padding: 2.5rem 3.5rem;
   background: var(--bg-card);
+  overflow-y: auto;
 }
 
 .sign-in-container {
