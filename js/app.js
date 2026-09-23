@@ -235,7 +235,7 @@
   // ==========================================================================
   class TaskStore {
     constructor() {
-      this.tasks = this.loadTasks();
+      this.tasks = [];
       this.listeners = [];
       this.theme = localStorage.getItem(THEME_KEY) || 'dark';
       this.viewMode = 'sprint';
@@ -246,28 +246,32 @@
         category: 'all',
         sortBy: 'dueDate'
       };
+      this.fetchTasks();
     }
 
-    loadTasks() {
+    async fetchTasks() {
       try {
-        const data = localStorage.getItem(STORAGE_KEY);
-        if (data) {
-          const parsed = JSON.parse(data);
-          if (Array.isArray(parsed) && parsed.length >= 8) {
-            return parsed.map((t, idx) => ({
-              ...t,
-              taskCode: t.taskCode || ('TMYT-' + String(idx + 8).padStart(3, '0')),
-              type: t.type || t.category || 'Funcionalidade',
-              epic: t.epic || (t.category || 'Sistemas'),
-              assignee: t.assignee || { name: 'Fillipe Felix', initials: 'FF' }
-            }));
-          }
+        const res = await fetch('http://localhost:3000/api/tasks');
+        const data = await res.json();
+        if (data.tasks && Array.isArray(data.tasks)) {
+          this.tasks = data.tasks.map((t, idx) => ({
+            ...t,
+            taskCode: t.taskCode || ('TMYT-' + String(idx + 8).padStart(3, '0')),
+            type: t.type || t.category || 'Funcionalidade',
+            epic: t.epic || (t.category || 'Sistemas'),
+            assignee: t.assignee || { name: 'Fillipe Felix', initials: 'FF' }
+          }));
         }
+        this.notify(false); // Notify without saving to localstorage
       } catch (e) {
-        console.error('Falha ao carregar do LocalStorage:', e);
+        console.error('Falha ao carregar do Backend:', e);
+        // Fallback to local storage se o backend cair
+        try {
+          const data = localStorage.getItem(STORAGE_KEY);
+          if (data) this.tasks = JSON.parse(data);
+        } catch (err) {}
+        this.notify(false);
       }
-      this.saveTasks(INITIAL_TASKS);
-      return INITIAL_TASKS;
     }
 
     saveTasks(tasksToSave = this.tasks) {
@@ -285,8 +289,8 @@
       };
     }
 
-    notify() {
-      this.saveTasks();
+    notify(save = true) {
+      if (save) this.saveTasks();
       this.listeners.forEach(fn => fn(this));
     }
 
@@ -305,6 +309,13 @@
       };
       this.tasks.unshift(newTask);
       this.notify();
+      
+      fetch('http://localhost:3000/api/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTask)
+      }).catch(e => console.error('Erro na API:', e));
+
       return newTask;
     }
 
@@ -317,6 +328,13 @@
           updatedAt: new Date().toISOString()
         };
         this.notify();
+        
+        fetch(`http://localhost:3000/api/tasks/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(this.tasks[index])
+        }).catch(e => console.error('Erro na API:', e));
+
         return this.tasks[index];
       }
       return null;
@@ -327,6 +345,11 @@
       this.tasks = this.tasks.filter(t => t.id !== id);
       if (this.tasks.length !== prevLen) {
         this.notify();
+        
+        fetch(`http://localhost:3000/api/tasks/${id}`, {
+          method: 'DELETE'
+        }).catch(e => console.error('Erro na API:', e));
+
         return true;
       }
       return false;
@@ -338,6 +361,13 @@
         task.status = newStatus;
         task.updatedAt = new Date().toISOString();
         this.notify();
+        
+        fetch(`http://localhost:3000/api/tasks/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(task)
+        }).catch(e => console.error('Erro na API:', e));
+
         return true;
       }
       return false;
@@ -1343,6 +1373,78 @@
   // Visualização de Métricas Avançadas (Analytics Dashboard View)
   // ==========================================================================
   // ==========================================================================
+  // Visualização de Relatório IA
+  // ==========================================================================
+  async function renderAiReportView() {
+    const container = document.getElementById('view-container');
+    container.innerHTML = `
+      <div class="analytics-dashboard animated-fade-in" style="max-width: 800px; margin: 0 auto; padding: 2rem;">
+        <div class="analytics-header" style="display: flex; flex-direction: column; align-items: center; text-align: center; margin-bottom: 2rem;">
+          <h2 style="font-size: 1.8rem; margin-bottom: 1rem; background: linear-gradient(90deg, #b829ff, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Relatório Inteligente de IA</h2>
+          <p style="color: var(--text-muted); margin-bottom: 1.5rem;">Deixe a Inteligência Artificial analisar suas tarefas e gerar um relatório completo de progresso.</p>
+          <button id="btn-generate-ai-report" class="btn btn-primary" style="font-size: 1.1rem; padding: 0.8rem 2rem; border-radius: 30px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.64 3.64-1.28-1.28a1.21 1.21 0 0 0-1.72 0L2.36 18.64a1.21 1.21 0 0 0 0 1.72l1.28 1.28a1.2 1.2 0 0 0 1.72 0L21.64 5.36a1.2 1.2 0 0 0 0-1.72Z"/><path d="m14 7 3 3"/><path d="M5 6v4"/><path d="M19 14v4"/><path d="M10 2v2"/><path d="M7 8H3"/><path d="M21 16h-4"/><path d="M11 3H9"/></svg>
+            Gerar Relatório Agora
+          </button>
+        </div>
+        <div id="ai-report-content" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 2rem; min-height: 200px; line-height: 1.6; display: none;">
+        </div>
+        <div id="ai-report-loading" style="display: none; text-align: center; padding: 3rem;">
+          <div class="loader" style="width: 40px; height: 40px; border: 4px solid rgba(99, 102, 241, 0.2); border-top-color: #6366f1; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem;"></div>
+          <p style="color: var(--text-muted);">A Inteligência Artificial está escrevendo o seu relatório...</p>
+        </div>
+      </div>
+    `;
+
+    document.getElementById('btn-generate-ai-report').addEventListener('click', async () => {
+      const btn = document.getElementById('btn-generate-ai-report');
+      const content = document.getElementById('ai-report-content');
+      const loading = document.getElementById('ai-report-loading');
+      
+      btn.disabled = true;
+      content.style.display = 'none';
+      loading.style.display = 'block';
+
+      try {
+        const metrics = {
+          total: store.tasks.length,
+          inProgress: store.tasks.filter(t => t.status === 'in_progress').length,
+          done: store.tasks.filter(t => t.status === 'done').length,
+          urgent: store.tasks.filter(t => t.priority === 'urgent' || t.priority === 'high').length
+        };
+        const response = await fetch('http://localhost:3000/api/ai-report', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tasks: store.tasks, metrics })
+        });
+        const data = await response.json();
+        
+        if (data.error) throw new Error(data.error);
+
+        // Simple markdown parsing to HTML
+        let htmlReport = data.report
+          .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+          .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+          .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+          .replace(/\*\*(.*?)\*\*/gim, '<strong>$1</strong>')
+          .replace(/\*(.*?)\*/gim, '<em>$1</em>')
+          .replace(/^\- (.*$)/gim, '<li>$1</li>')
+          .replace(/\n/gim, '<br>');
+        
+        content.innerHTML = htmlReport;
+        content.style.display = 'block';
+      } catch (err) {
+        content.innerHTML = `<div style="color: #ef4444;">Erro ao gerar relatório: ${err.message}</div>`;
+        content.style.display = 'block';
+        showToast('Erro ao contatar a IA', 'error');
+      } finally {
+        loading.style.display = 'none';
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // ==========================================================================
   // Visualização de Métricas Avançadas (Analytics Dashboard View)
   // ==========================================================================
   function renderAnalyticsView(tasks, metrics) {
@@ -1834,6 +1936,8 @@
       renderCalendarView(filteredTasks);
     } else if (store.viewMode === 'analytics') {
       renderAnalyticsView(filteredTasks, metrics);
+    } else if (store.viewMode === 'ai-report') {
+      renderAiReportView();
     } else {
       renderListView(filteredTasks);
     }
@@ -1864,6 +1968,7 @@
     const viewListBtn = document.getElementById('view-list-btn');
     const viewCalendarBtn = document.getElementById('view-calendar-btn');
     const viewAnalyticsBtn = document.getElementById('view-analytics-btn');
+    const viewAiReportBtn = document.getElementById('view-ai-report-btn');
 
     function updateViewTabs(activeMode) {
       if (viewSprintBtn) {
@@ -1886,6 +1991,10 @@
         viewAnalyticsBtn.classList.toggle('active', activeMode === 'analytics');
         viewAnalyticsBtn.setAttribute('aria-selected', activeMode === 'analytics');
       }
+      if (viewAiReportBtn) {
+        viewAiReportBtn.classList.toggle('active', activeMode === 'ai-report');
+        viewAiReportBtn.setAttribute('aria-selected', activeMode === 'ai-report');
+      }
 
       // Sincronizar sidebar
       const sidebarItems = document.querySelectorAll('#app-sidebar .sidebar-item');
@@ -1894,7 +2003,8 @@
         const shouldBeActive = (page === 'dashboard' && activeMode === 'sprint') ||
                                (page === 'kanban' && activeMode === 'kanban') ||
                                (page === 'calendar' && activeMode === 'calendar') ||
-                               (page === 'analytics' && activeMode === 'analytics');
+                               (page === 'analytics' && activeMode === 'analytics') ||
+                               (page === 'ai-report' && activeMode === 'ai-report');
         item.classList.toggle('active', shouldBeActive);
       });
     }
@@ -1933,6 +2043,12 @@
     if (viewAnalyticsBtn) {
       viewAnalyticsBtn.addEventListener('click', () => {
         window.MunagoSetViewMode('analytics');
+      });
+    }
+
+    if (viewAiReportBtn) {
+      viewAiReportBtn.addEventListener('click', () => {
+        window.MunagoSetViewMode('ai-report');
       });
     }
 

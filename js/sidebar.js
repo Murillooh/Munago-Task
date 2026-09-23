@@ -85,6 +85,13 @@
               const anaBtn = document.getElementById('view-analytics-btn');
               if (anaBtn) anaBtn.click();
             }
+          } else if (page === 'ai-report') {
+            if (window.MunagoSetViewMode) {
+              window.MunagoSetViewMode('ai-report');
+            } else {
+              const aiBtn = document.getElementById('view-ai-report-btn');
+              if (aiBtn) aiBtn.click();
+            }
           }
         });
       });

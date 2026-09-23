@@ -1,0 +1,29 @@
+{
+  "name": "munago-task-main",
+  "version": "1.0.0",
+  "description": "Um sistema web completo, moderno e altamente produtivo para organização de rotinas, projetos e tarefas pessoais ou corporativas.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Murillooh/Munago-Task.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Murillooh/Munago-Task/issues"
+  },
+  "homepage": "https://github.com/Murillooh/Munago-Task#readme",
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.3",
+    "express": "^5.2.1",
+    "pg": "^8.23.0",
+    "sqlite3": "^6.0.1"
+  }
+}
