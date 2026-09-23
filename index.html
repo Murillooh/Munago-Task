@@ -77,9 +77,6 @@
           <span>Nova Tarefa</span>
         </button>
 
-        <!-- Slot do Perfil de Usuário / Login -->
-        <div id="user-profile-slot"></div>
-      </div>
     </header>
 
     <!-- Layout Grid: Sidebar + Main Content -->
@@ -202,16 +199,9 @@
           <span class="sidebar-storage-text">24% utilizado de 5 MB</span>
         </div>
 
-        <!-- Ações Rápidas no Footer -->
-        <div class="sidebar-footer">
-          <button class="sidebar-footer-btn" title="Configurações">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
-            <span class="sidebar-footer-text">Configurações</span>
-          </button>
-          <button class="sidebar-footer-btn" title="Ajuda & Atalhos">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
-            <span class="sidebar-footer-text">Ajuda</span>
-          </button>
+        <!-- Slot do Perfil de Usuário / Login (movido do header para substituir os botões de footer) -->
+        <div class="sidebar-footer" id="user-profile-slot" style="padding: 16px; border-top: 1px solid var(--border-color);">
+          <!-- Conteúdo gerado dinamicamente pelo auth.js -->
         </div>
       </aside>
 
@@ -848,5 +838,57 @@
   <script src="js/sidebar.js?v=2"></script>
   <script src="js/auth.js?v=2"></script>
   <script src="js/app.js?v=4"></script>
+  <!-- Modal de Configurações -->
+  <div id="settings-modal" class="modal-backdrop" role="dialog" aria-modal="true" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
+    <div class="modal-dialog" style="max-width: 400px; width: 90%; background: var(--bg-secondary); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 1.25rem; color: var(--text-primary);">Configurações</h2>
+        <button id="close-settings-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 16px;">
+        <button id="settings-theme-btn" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          Alternar Tema Escuro/Claro
+        </button>
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 0;">
+        <button id="settings-export-btn" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+          Fazer Backup (Exportar JSON)
+        </button>
+        <button id="settings-import-btn" class="btn btn-secondary" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          Restaurar Backup (Importar JSON)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Ajuda -->
+  <div id="help-modal" class="modal-backdrop" role="dialog" aria-modal="true" style="display: none; align-items: center; justify-content: center; z-index: 10000;">
+    <div class="modal-dialog" style="max-width: 400px; width: 90%; background: var(--bg-secondary); border-radius: 12px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 style="margin: 0; font-size: 1.25rem; color: var(--text-primary);">Ajuda e Atalhos</h2>
+        <button id="close-help-btn" style="background: none; border: none; color: var(--text-secondary); cursor: pointer;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px; color: var(--text-secondary);">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Nova Tarefa</span>
+          <kbd style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; color: var(--text-primary);">N</kbd>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Pesquisar</span>
+          <kbd style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; color: var(--text-primary);">/</kbd>
+        </div>
+        <div style="display: flex; justify-content: space-between;">
+          <span>Recolher Sidebar</span>
+          <kbd style="background: var(--bg-tertiary); padding: 2px 6px; border-radius: 4px; color: var(--text-primary);">[</kbd>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

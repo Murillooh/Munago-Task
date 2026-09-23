@@ -254,6 +254,32 @@
         const res = await fetch('http://localhost:3000/api/tasks');
         const data = await res.json();
         if (data.tasks && Array.isArray(data.tasks)) {
+          // Migração: Se o banco de dados na nuvem estiver vazio, puxar do localStorage e salvar no banco
+          if (data.tasks.length === 0) {
+            try {
+              const localData = localStorage.getItem(STORAGE_KEY);
+              if (localData) {
+                const localTasks = JSON.parse(localData);
+                if (localTasks && localTasks.length > 0) {
+                  console.log("Migrando tarefas locais para o banco de dados AWS...");
+                  for (const task of localTasks) {
+                    await fetch('http://localhost:3000/api/tasks', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(task)
+                    });
+                  }
+                  // Puxar as tarefas atualizadas do banco de dados
+                  const res2 = await fetch('http://localhost:3000/api/tasks');
+                  const data2 = await res2.json();
+                  data.tasks = data2.tasks || [];
+                }
+              }
+            } catch (migErr) {
+              console.error("Erro na migração local->nuvem", migErr);
+            }
+          }
+
           this.tasks = data.tasks.map((t, idx) => ({
             ...t,
             taskCode: t.taskCode || ('TMYT-' + String(idx + 8).padStart(3, '0')),
@@ -262,7 +288,7 @@
             assignee: t.assignee || { name: 'Fillipe Felix', initials: 'FF' }
           }));
         }
-        this.notify(false); // Notify without saving to localstorage
+        this.notify(false); // Notify sem salvar no localstorage
       } catch (e) {
         console.error('Falha ao carregar do Backend:', e);
         // Fallback to local storage se o backend cair
@@ -1564,8 +1590,8 @@
     // Membros da Equipe
     const teamStats = {};
     tasks.forEach(t => {
-      const name = t.assignee?.name || 'Fillipe Felix';
-      const initials = t.assignee?.initials || 'FF';
+      const name = t.assignee?.name || 'Sem Responsável';
+      const initials = t.assignee?.initials || '?';
       if (!teamStats[name]) {
         teamStats[name] = { name, initials, total: 0, done: 0, inProgress: 0 };
       }
@@ -2498,6 +2524,34 @@
 
     if (window.authManager) {
       window.authManager.updateHeaderProfile();
+    }
+
+    // Eventos para os Modais de Configurações e Ajuda
+    const settingsModal = document.getElementById('settings-modal');
+    if (settingsModal) {
+      document.getElementById('close-settings-btn').addEventListener('click', () => settingsModal.style.display = 'none');
+      settingsModal.addEventListener('click', (e) => { if(e.target === settingsModal) settingsModal.style.display = 'none'; });
+      
+      document.getElementById('settings-theme-btn').addEventListener('click', () => {
+        const themeBtn = document.getElementById('theme-toggle-btn');
+        if (themeBtn) themeBtn.click();
+      });
+      document.getElementById('settings-export-btn').addEventListener('click', () => {
+        const exportBtn = document.getElementById('btn-export-backup');
+        if (exportBtn) exportBtn.click();
+        settingsModal.style.display = 'none';
+      });
+      document.getElementById('settings-import-btn').addEventListener('click', () => {
+        const importBtn = document.getElementById('btn-import-backup');
+        if (importBtn) importBtn.click();
+        settingsModal.style.display = 'none';
+      });
+    }
+
+    const helpModal = document.getElementById('help-modal');
+    if (helpModal) {
+      document.getElementById('close-help-btn').addEventListener('click', () => helpModal.style.display = 'none');
+      helpModal.addEventListener('click', (e) => { if(e.target === helpModal) helpModal.style.display = 'none'; });
     }
   }
 

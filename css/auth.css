@@ -1409,3 +1409,9 @@
     display: none;
   }
 }
+#menu-btn-config:hover, #menu-btn-logout:hover, #menu-btn-help:hover { color: var(--text-primary) !important; }
+
+.pill-btn { background: transparent; border: 1px solid transparent; padding: 4px 8px; border-radius: 16px; color: var(--text-secondary); font-size: 0.75rem; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 4px; transition: all 0.2s ease; } 
+.pill-btn:hover { background: var(--bg-tertiary, rgba(255,255,255,0.05)); color: var(--text-primary); border-color: var(--border-color, rgba(255,255,255,0.1)); } 
+.icon-btn { background: transparent; border: none; padding: 4px; border-radius: 50%; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s ease; } 
+.icon-btn:hover { background: var(--bg-tertiary, rgba(255,255,255,0.05)); color: var(--text-primary); }

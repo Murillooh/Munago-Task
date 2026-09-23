@@ -190,51 +190,42 @@
 
       if (this.currentUser) {
         profileContainer.innerHTML = `
-          <div class="user-profile-menu">
-            <button id="btn-user-menu" class="user-profile-btn" aria-haspopup="true" aria-expanded="false" title="Menu da Conta">
-              <div class="user-avatar">${this.currentUser.initials || 'US'}</div>
-              <span class="user-name">${this.currentUser.name.split(' ')[0]}</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m6 9 6 6 6-6"/></svg>
-            </button>
-            <div id="user-dropdown-menu" class="user-dropdown" role="menu">
-              <div class="dropdown-header">
-                <div class="dropdown-user-name">${this.currentUser.name}</div>
-                <div class="dropdown-user-email">${this.currentUser.email}</div>
+          <div class="sidebar-user-bottom" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+            <div class="sidebar-user-name" style="font-weight: 600; font-size: 0.95rem; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 6px;">
+              ${this.currentUser.name}
+            </div>
+            <div class="sidebar-user-actions" style="display: flex; align-items: center; justify-content: space-between; padding-left: 2px; padding-right: 2px;">
+              <div style="display: flex; align-items: center; gap: 4px;">
+                <button id="menu-btn-config" title="Configurações" class="pill-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+                  <span>Configurações</span>
+                </button>
+                <button id="menu-btn-logout" title="Sair da Conta" class="pill-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                  <span>Sair</span>
+                </button>
               </div>
-              <button class="dropdown-item" id="menu-switch-account">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                <span>Trocar de Conta</span>
-              </button>
-              <button class="dropdown-item danger" id="menu-logout">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-                <span>Sair da Conta</span>
+              <button id="menu-btn-help" title="Ajuda & Atalhos" class="icon-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
               </button>
             </div>
           </div>
         `;
 
-        const btnMenu = document.getElementById('btn-user-menu');
-        const dropdown = document.getElementById('user-dropdown-menu');
-
-        btnMenu.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const isOpen = dropdown.classList.contains('open');
-          dropdown.classList.toggle('open', !isOpen);
-          btnMenu.setAttribute('aria-expanded', !isOpen);
-        });
-
-        document.getElementById('menu-switch-account').addEventListener('click', () => {
-          dropdown.classList.remove('open');
-          this.openAuthModal('login');
-        });
-
-        document.getElementById('menu-logout').addEventListener('click', () => {
-          dropdown.classList.remove('open');
+        document.getElementById('menu-btn-logout').addEventListener('click', () => {
           this.logout();
+        });
+
+        document.getElementById('menu-btn-config').addEventListener('click', () => {
+          document.getElementById('settings-modal').style.display = 'flex';
+        });
+
+        document.getElementById('menu-btn-help').addEventListener('click', () => {
+          document.getElementById('help-modal').style.display = 'flex';
         });
       } else {
         profileContainer.innerHTML = `
-          <button id="btn-open-login" class="btn btn-secondary" title="Fazer login ou criar conta">
+          <button id="btn-open-login" class="btn btn-secondary" title="Fazer login ou criar conta" style="width: 100%;">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg>
             <span>Entrar</span>
           </button>
