@@ -55,9 +55,8 @@
       } catch (e) {
         console.error('Erro ao ler sessão:', e);
       }
-      // Se não houver sessão salva, inicia com o usuário demonstrativo logado
-      this.saveSession(DEFAULT_USER);
-      return DEFAULT_USER;
+      // Se não houver sessão salva, retorna nulo para exigir login
+      return null;
     }
 
     saveSession(user) {
@@ -235,6 +234,11 @@
     }
 
     init() {
+      // Se não houver usuário logado, exibe a tela de login
+      if (!this.currentUser) {
+        setTimeout(() => this.openAuthModal('login'), 0);
+      }
+
       // Fecha dropdown ao clicar fora
       document.addEventListener('click', (e) => {
         const dropdown = document.getElementById('user-dropdown-menu');
