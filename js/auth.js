@@ -164,11 +164,21 @@
       }
 
       overlay.classList.add('active');
+      
+      const appContainer = document.querySelector('.app-container');
+      if (appContainer && !this.currentUser) {
+        appContainer.style.display = 'none';
+      }
     }
 
     closeAuthModal() {
       const overlay = document.getElementById('auth-overlay');
       if (overlay) overlay.classList.remove('active');
+      
+      const appContainer = document.querySelector('.app-container');
+      if (appContainer) {
+        appContainer.style.display = '';
+      }
     }
 
     updateHeaderProfile() {
@@ -234,9 +244,17 @@
     }
 
     init() {
-      // Se não houver usuário logado, exibe a tela de login
+      // Se não houver usuário logado, esconde o sistema e exibe a tela de login
       if (!this.currentUser) {
-        setTimeout(() => this.openAuthModal('login'), 0);
+        const appContainer = document.querySelector('.app-container');
+        if (appContainer) appContainer.style.display = 'none';
+        
+        // Garante que o modal abra mesmo se o DOM estiver terminando de carregar
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', () => this.openAuthModal('login'));
+        } else {
+          setTimeout(() => this.openAuthModal('login'), 0);
+        }
       }
 
       // Fecha dropdown ao clicar fora
